@@ -1,0 +1,35 @@
+# ===== Keil MDK build artifacts =====
+Objects/
+Listings/
+DebugConfig/
+*.o
+*.d
+*.crf
+*.axf
+*.htm
+*.lnp
+*.lst
+*.map
+*.dep
+*.iex
+*.uvguix.*
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== IDE =====
+.vscode/
+.idea/
+.trae/
+.workbuddy/
+
+# ===== Archives =====
+*.rar
+*.zip

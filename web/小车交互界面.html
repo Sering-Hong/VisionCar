@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能小车控制终端</title>
+    <style>
+        :root {
+            /* 默认主题 (Default Light) */
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #2d3436;
+            --sub-text-color: #636e72;
+            --input-bg: #ffffff;
+            --input-border: #dfe6e9;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --shadow: 0 10px 20px rgba(0,0,0,0.08);
+            --radius: 16px;
+            --btn-control-bg: #f0f2f5;
+            --btn-control-shadow-light: #ffffff;
+            --btn-control-shadow-dark: #d1d9e6;
+        }
+
+        /* 暗黑模式 (Dark Mode) */
+        [data-theme="dark"] {
+            --primary-color: #a29bfe;
+            --secondary-color: #6c5ce7;
+            --bg-color: #2d3436;
+            --card-bg: #353b48;
+            --text-color: #dfe6e9;
+            --sub-text-color: #b2bec3;
+            --input-bg: #2d3436;
+            --input-border: #636e72;
+            --success-color: #55efc4;
+            --warning-color: #ffeaa7;
+            --danger-color: #ff7675;
+            --shadow: 0 10px 20px rgba(0,0,0,0.3);
+            --btn-control-bg: #353b48;
+            --btn-control-shadow-light: #4a5160;
+            --btn-control-shadow-dark: #23272f;
+        }
+
+        /* 科技蓝 (Cyber Blue) */
+        [data-theme="cyber"] {
+            --primary-color: #00cec9;
+            --secondary-color: #81ecec;
+            --bg-color: #000000;
+            --card-bg: #0c1a24;
+            --text-color: #00cec9;
+            --sub-text-color: #4a69bd;
+            --input-bg: #0c1a24;
+            --input-border: #00cec9;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --shadow: 0 0 15px rgba(0, 206, 201, 0.2);
+            --radius: 4px;
+            --btn-control-bg: #0c1a24;
+            --btn-control-shadow-light: #152c3d;
+            --btn-control-shadow-dark: #050b0f;
+        }
+
+        /* 自然绿 (Nature Green) */
+        [data-theme="nature"] {
+            --primary-color: #27ae60;
+            --secondary-color: #2ecc71;
+            --bg-color: #eafaf1;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --sub-text-color: #7f8c8d;
+            --input-bg: #ffffff;
+            --input-border: #a9dfbf;
+            --success-color: #27ae60;
+            --warning-color: #f1c40f;
+            --danger-color: #c0392b;
+            --shadow: 0 10px 20px rgba(39, 174, 96, 0.1);
+            --radius: 20px;
+            --btn-control-bg: #eafaf1;
+            --btn-control-shadow-light: #ffffff;
+            --btn-control-shadow-dark: #d5dbdb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* 防止长按选中文字 */
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px; /* 适配移动端宽度 */
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4px;
+            padding-top: 10px; /* 为绝对定位的主题切换留出一点空间，或者保持紧凑 */
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+        }
+
+        .status-bar {
+            font-size: 0.85rem;
+            color: var(--sub-text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+            transition: background-color 0.3s;
+        }
+
+        .connection-indicator.connected {
+            background-color: var(--success-color);
+        }
+
+        /* 摄像头区域 */
+        .camera-section {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--input-border);
+        }
+
+        .camera-placeholder {
+            text-align: center;
+            color: var(--sub-text-color);
+        }
+
+        #camera-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* 默认隐藏，有流时显示 */
+        }
+
+        .camera-settings {
+            margin-top: -10px;
+            display: flex;<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能小车控制终端</title>
+    <style>
+        :root {
+            /* 默认主题 (Default Light) */
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #2d3436;
+            --sub-text-color: #636e72;
+            --input-bg: #ffffff;
+            --input-border: #dfe6e9;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --shadow: 0 10px 20px rgba(0,0,0,0.08);
+            --radius: 16px;
+            --btn-control-bg: #f0f2f5;
+            --btn-control-shadow-light: #ffffff;
+            --btn-control-shadow-dark: #d1d9e6;
+        }
+
+        /* 暗黑模式 (Dark Mode) */
+        [data-theme="dark"] {
+            --primary-color: #a29bfe;
+            --secondary-color: #6c5ce7;
+            --bg-color: #2d3436;
+            --card-bg: #353b48;
+            --text-color: #dfe6e9;
+            --sub-text-color: #b2bec3;
+            --input-bg: #2d3436;
+            --input-border: #636e72;
+            --success-color: #55efc4;
+            --warning-color: #ffeaa7;
+            --danger-color: #ff7675;
+            --shadow: 0 10px 20px rgba(0,0,0,0.3);
+            --btn-control-bg: #353b48;
+            --btn-control-shadow-light: #4a5160;
+            --btn-control-shadow-dark: #23272f;
+        }
+
+        /* 科技蓝 (Cyber Blue) */
+        [data-theme="cyber"] {
+            --primary-color: #00cec9;
+            --secondary-color: #81ecec;
+            --bg-color: #000000;
+            --card-bg: #0c1a24;
+            --text-color: #00cec9;
+            --sub-text-color: #4a69bd;
+            --input-bg: #0c1a24;
+            --input-border: #00cec9;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --shadow: 0 0 15px rgba(0, 206, 201, 0.2);
+            --radius: 4px;
+            --btn-control-bg: #0c1a24;
+            --btn-control-shadow-light: #152c3d;
+            --btn-control-shadow-dark: #050b0f;
+        }
+
+        /* 自然绿 (Nature Green) */
+        [data-theme="nature"] {
+            --primary-color: #27ae60;
+            --secondary-color: #2ecc71;
+            --bg-color: #eafaf1;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --sub-text-color: #7f8c8d;
+            --input-bg: #ffffff;
+            --input-border: #a9dfbf;
+            --success-color: #27ae60;
+            --warning-color: #f1c40f;
+            --danger-color: #c0392b;
+            --shadow: 0 10px 20px rgba(39, 174, 96, 0.1);
+            --radius: 20px;
+            --btn-control-bg: #eafaf1;
+            --btn-control-shadow-light: #ffffff;
+            --btn-control-shadow-dark: #d5dbdb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* 防止长按选中文字 */
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px; /* 适配移动端宽度 */
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4px;
+            padding-top: 10px; /* 为绝对定位的主题切换留出一点空间，或者保持紧凑 */
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+        }
+
+        .status-bar {
+            font-size: 0.85rem;
+            color: var(--sub-text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+            transition: background-color 0.3s;
+        }
+
+        .connection-indicator.connected {
+            background-color: var(--success-color);
+        }
+
+        /* 摄像头区域 */
+        .camera-section {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--input-border);
+        }
+
+        .camera-placeholder {
+            text-align: center;
+            color: var(--sub-text-color);
+        }
+
+        #camera-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* 默认隐藏，有流时显示 */
+        }
+
+        .camera-settings {
+            margin-top: -10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .camera-settings input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        /* 状态监控卡片 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--input-border);
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--sub-text-color);
+        }
+
+        /* 控制区域 */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            width: 200px;
+            aspect-ratio: 1;
+        }
+
+        .btn-control {
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--btn-control-bg);
+            box-shadow: 3px 3px 6px var(--btn-control-shadow-dark), -3px -3px 6px var(--btn-control-shadow-light);
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            touch-action: manipulation; /* 优化触摸响应 */
+            place-self: center; /* 居中对齐 */
+        }
+
+        .btn-control:active {
+            box-shadow: inset 2px 2px 5px var(--btn-control-shadow-dark), inset -2px -2px 5px var(--btn-control-shadow-light);
+            transform: scale(0.95);
+            color: var(--primary-color);
+        }
+
+
+        /* 布局定位 */
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 3; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+        
+        .btn-center {
+            grid-column: 2; 
+            grid-row: 2; 
+            visibility: hidden; /* 占位用 */
+        }
+
+        /* 功能按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        #btn-connect {
+            font-size: 1.2rem;
+            padding: 14px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        .btn-primary:disabled {
+            background-color: #b2bec3;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 日志/消息区域 */
+        #log-area {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #b2bec3;
+            text-align: center;
+            margin-top: 10px;
+            min-height: 1.2em;
+        }
+
+        .theme-pos {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="theme-pos">
+        <select id="theme-selector" style="padding: 4px 8px; border-radius: 12px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); font-size: 0.75rem; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <option value="light">默认</option>
+            <option value="dark">暗黑</option>
+            <option value="cyber">科技</option>
+            <option value="nature">自然</option>
+        </select>
+    </div>
+    <header>
+        <h1>小车控制台</h1>
+        <div class="status-bar">
+            <div id="connection-status-indicator" class="connection-indicator"></div>
+            <span id="connection-status-text">未连接</span>
+        </div>
+    </header>
+
+    <!-- 摄像头模块 -->
+    <div class="camera-section">
+        <div class="camera-placeholder" id="camera-placeholder">
+            <p>等待视频信号...</p>
+            <small>请连接摄像头或输入流地址</small>
+        </div>
+        <img id="camera-stream" src="" alt="Camera Stream" onerror="this.style.display='none'; document.getElementById('camera-placeholder').style.display='flex';">
+    </div>
+    <div class="camera-settings">
+        <input type="text" id="stream-url-input" placeholder="输入视频流URL (如 http://192.168.1.x:81/stream)">
+        <button class="btn-primary" style="flex: 0 0 80px;" onclick="updateCamera()">加载</button>
+    </div>
+
+    <!-- 状态监控模块 -->
+    <div class="dashboard">
+        <div class="stat-card">
+            <div class="stat-label">电池电量</div>
+            <div class="stat-value" id="battery-value">-- %</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">当前速度</div>
+            <div class="stat-value" id="speed-value">-- cm/s</div>
+        </div>
+    </div>
+
+    <!-- 手动遥控模块 -->
+    <div class="control-panel">
+        <div class="d-pad">
+            <button class="btn-control btn-up" ontouchstart="sendCommand('FORWARD')" onmousedown="sendCommand('FORWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▲</button>
+            <button class="btn-control btn-left" ontouchstart="sendCommand('LEFT')" onmousedown="sendCommand('LEFT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">◀</button>
+            <button class="btn-control btn-down" ontouchstart="sendCommand('BACKWARD')" onmousedown="sendCommand('BACKWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▼</button>
+            <button class="btn-control btn-right" ontouchstart="sendCommand('RIGHT')" onmousedown="sendCommand('RIGHT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▶</button>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button id="btn-connect" class="btn-primary" onclick="toggleConnection()">连接蓝牙小车</button>
+    </div>
+
+    <div id="log-area">准备就绪</div>
+</div>
+
+<script>
+    // 应用程序类
+    class SmartCarController {
+        constructor() {
+            // 配置区域 - 请根据实际硬件修改以下UUID
+            this.config = {
+                // 蓝牙服务 UUID (通常为 128-bit 或 16-bit)
+                // 示例: '0000ffe0-0000-1000-8000-00805f9b34fb' (常见 HM-10 模块)
+                SERVICE_UUID: 0xFFE0, 
+                
+                // 特征值 UUID (用于读写数据)
+                // 示例: '0000ffe1-0000-1000-8000-00805f9b34fb'
+                CHARACTERISTIC_UUID: 0xFFE1,
+
+                // 指令集 (根据小车协议修改)
+                COMMANDS: {
+                    FORWARD:  new Uint8Array([0x01]), // 示例指令：前进
+                    BACKWARD: new Uint8Array([0x02]), // 示例指令：后退
+                    LEFT:     new Uint8Array([0x03]), // 示例指令：左转
+                    RIGHT:    new Uint8Array([0x04]), // 示例指令：右转
+                    STOP:     new Uint8Array([0x00])  // 示例指令：停止
+                }
+            };
+
+            // 状态变量
+            this.bluetoothDevice = null;
+            this.bluetoothCharacteristic = null;
+            this.isConnected = false;
+            
+            // 按钮状态跟踪
+            this.buttonStates = {
+                up: false,
+                down: false,
+                left: false,
+                right: false
+            };
+            
+            // 当前活动命令
+            this.activeCommand = null;
+            
+            // 初始化UI元素引用
+            this.initElements();
+            
+            // 绑定事件
+            this.bindEvents();
+            
+            // 初始化主题
+            this.initializeTheme();
+            
+            // 设置键盘事件处理器
+            this.setupKeyboardControls();
+            
+            // 设置默认状态
+            this.updateConnectionUI(false);
+        }
+
+        initElements() {
+            this.statusText = document.getElementById('connection-status-text');
+            this.statusIndicator = document.getElementById('connection-status-indicator');
+            this.connectBtn = document.getElementById('btn-connect');
+            this.logArea = document.getElementById('log-area');
+            this.batteryValue = document.getElementById('battery-value');
+            this.speedValue = document.getElementById('speed-value');
+            this.streamUrlInput = document.getElementById('stream-url-input');
+            this.cameraStream = document.getElementById('camera-stream');
+            this.cameraPlaceholder = document.getElementById('camera-placeholder');
+            this.themeSelector = document.getElementById('theme-selector');
+        }
+
+        bindEvents() {
+            // 主题切换事件
+            this.themeSelector.addEventListener('change', (e) => {
+                this.setTheme(e.target.value);
+            });
+        }
+
+        initializeTheme() {
+            const savedTheme = localStorage.getItem('app-theme') || 'light';
+            this.setTheme(savedTheme);
+            this.themeSelector.value = savedTheme;
+        }
+
+        setTheme(themeName) {
+            if (themeName === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', themeName);
+            }
+            localStorage.setItem('app-theme', themeName); // 保存用户选择
+        }
+
+        // 日志辅助函数
+        log(message) {
+            console.log(message);
+            this.logArea.textContent = message;
+        }
+
+        // 蓝牙连接逻辑
+        async toggleConnection() {
+            if (this.isConnected) {
+                await this.disconnect();
+            } else {
+                await this.connect();
+            }
+        }
+
+        async connect() {
+            try {
+                this.log('正在搜索蓝牙设备...');
+                
+                // 请求蓝牙设备
+                // 注意: 这里 acceptAllDevices: true 用于测试，实际生产建议使用 filters: [{ services: [CONFIG.SERVICE_UUID] }]
+                this.bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: [this.config.SERVICE_UUID]
+                });
+
+                this.bluetoothDevice.addEventListener('gattserverdisconnected', () => this.onDisconnected());
+
+                this.log('连接到 GATT 服务器...');
+                const server = await this.bluetoothDevice.gatt.connect();
+
+                this.log('获取服务...');
+                const service = await server.getPrimaryService(this.config.SERVICE_UUID);
+
+                this.log('获取特征值...');
+                this.bluetoothCharacteristic = await service.getCharacteristic(this.config.CHARACTERISTIC_UUID);
+
+                // 启用通知（如果支持）以接收小车状态
+                try {
+                    await this.bluetoothCharacteristic.startNotifications();
+                    this.bluetoothCharacteristic.addEventListener('characteristicvaluechanged', (event) => this.handleNotifications(event));
+                    this.log('已启用状态监听');
+                } catch (e) {
+                    this.log('警告: 无法启用通知 (可能不支持)');
+                }
+
+                this.isConnected = true;
+                this.updateConnectionUI(true);
+                this.log('已连接到 ' + this.bluetoothDevice.name);
+
+            } catch (error) {
+                this.log('连接失败: ' + error);
+                console.error(error);
+            }
+        }
+
+        async disconnect() {
+            if (this.bluetoothDevice && this.bluetoothDevice.gatt.connected) {
+                this.bluetoothDevice.gatt.disconnect();
+            }
+        }
+
+        onDisconnected() {
+            this.isConnected = false;
+            this.updateConnectionUI(false);
+            this.log('蓝牙已断开');
+        }
+
+        updateConnectionUI(connected) {
+            if (connected) {
+                this.statusText.textContent = '已连接';
+                this.statusIndicator.classList.add('connected');
+                this.connectBtn.textContent = '断开连接';
+                this.connectBtn.style.backgroundColor = '#d63031';
+            } else {
+                this.statusText.textContent = '未连接';
+                this.statusIndicator.classList.remove('connected');
+                this.connectBtn.textContent = '连接蓝牙小车';
+                this.connectBtn.style.backgroundColor = ''; // 恢复默认
+                // 重置状态显示
+                this.batteryValue.textContent = '-- %';
+                this.speedValue.textContent = '-- cm/s';
+            }
+        }
+
+        // 指令发送逻辑
+        async sendCommand(action) {
+            if (!this.isConnected || !this.bluetoothCharacteristic) {
+                this.log('未连接设备，无法发送: ' + action);
+                return;
+            }
+
+            const data = this.config.COMMANDS[action];
+            if (data) {
+                try {
+                    await this.bluetoothCharacteristic.writeValue(data);
+                    this.activeCommand = action;
+                    // log('发送指令: ' + action); // 可选：避免日志刷屏
+                } catch (error) {
+                    this.log('发送失败: ' + error);
+                }
+            }
+        }
+
+        // 智能停止：只有当所有方向按键都松开时才发送停止命令
+        smartStop(command) {
+            // 更新按钮状态
+            switch(command) {
+                case 'FORWARD':
+                    this.buttonStates.up = false;
+                    break;
+                case 'BACKWARD':
+                    this.buttonStates.down = false;
+                    break;
+                case 'LEFT':
+                    this.buttonStates.left = false;
+                    break;
+                case 'RIGHT':
+                    this.buttonStates.right = false;
+                    break;
+            }
+            
+            // 如果所有方向按键都松开了，则发送停止命令
+            if (!this.buttonStates.up && !this.buttonStates.down && 
+                !this.buttonStates.left && !this.buttonStates.right) {
+                this.sendCommand('STOP');
+            }
+        }
+
+        // 状态接收逻辑 (通知处理)
+        handleNotifications(event) {
+            const value = event.target.value;
+            // 假设数据格式: [标识符, 值] 
+            // 实际需根据协议解析。此处为模拟解析示例：
+            // 假设 0x01 开头是电量，0x02 开头是速度
+            
+            // 简单示例：直接显示接收到的原始数据长度
+            // log('收到数据: ' + value.byteLength + ' 字节');
+
+            // TODO: 请在此处实现具体的数据解析逻辑
+            /*
+            const dataView = new DataView(value.buffer);
+            const type = dataView.getUint8(0);
+            const val = dataView.getUint8(1);
+            
+            if (type === 0x01) {
+                this.batteryValue.textContent = val + ' %';
+            } else if (type === 0x02) {
+                this.speedValue.textContent = val + ' cm/s';
+            }
+            */
+           
+           // 模拟数据更新 (演示用)
+           // 实际开发中请删除这部分，使用上面的解析逻辑
+           if (Math.random() > 0.5) {
+               this.batteryValue.textContent = Math.floor(Math.random() * 20 + 80) + ' %';
+           } else {
+               this.speedValue.textContent = Math.floor(Math.random() * 50) + ' cm/s';
+           }
+        }
+
+        // 摄像头逻辑
+        updateCamera() {
+            const url = this.streamUrlInput.value;
+
+            if (url) {
+                this.cameraStream.src = url;
+                this.cameraStream.style.display = 'block';
+                this.cameraPlaceholder.style.display = 'none';
+            } else {
+                this.log('请输入有效的视频流URL');
+            }
+        }
+        
+        // 键盘控制支持 (WASD 或 方向键)
+        setupKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                if (e.repeat) return; // 防止长按重复触发
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        this.buttonStates.up = true;
+                        this.sendCommand('FORWARD');
+                        this.highlightButton('.btn-up', true);
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        this.buttonStates.down = true;
+                        this.sendCommand('BACKWARD');
+                        this.highlightButton('.btn-down', true);
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        this.buttonStates.left = true;
+                        this.sendCommand('LEFT');
+                        this.highlightButton('.btn-left', true);
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        this.buttonStates.right = true;
+                        this.sendCommand('RIGHT');
+                        this.highlightButton('.btn-right', true);
+                        break;
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': 
+                    case 'w': 
+                    case 'W':
+                        this.buttonStates.up = false;
+                        this.smartStop('FORWARD');
+                        this.highlightButton('.btn-up', false);
+                        break;
+                    case 'ArrowDown': 
+                    case 's': 
+                    case 'S':
+                        this.buttonStates.down = false;
+                        this.smartStop('BACKWARD');
+                        this.highlightButton('.btn-down', false);
+                        break;
+                    case 'ArrowLeft': 
+                    case 'a': 
+                    case 'A':
+                        this.buttonStates.left = false;
+                        this.smartStop('LEFT');
+                        this.highlightButton('.btn-left', false);
+                        break;
+                    case 'ArrowRight': 
+                    case 'd': 
+                    case 'D':
+                        this.buttonStates.right = false;
+                        this.smartStop('RIGHT');
+                        this.highlightButton('.btn-right', false);
+                        break;
+                }
+            });
+        }
+
+        highlightButton(selector, active) {
+            const btn = document.querySelector(selector);
+            if (btn) {
+                if (active) {
+                    btn.style.backgroundColor = 'var(--btn-control-shadow-light)';
+                    btn.style.transform = 'scale(0.95)';
+                } else {
+                    btn.style.backgroundColor = '';
+                    btn.style.transform = '';
+                }
+            }
+        }
+    }
+
+    // 初始化应用
+    const app = new SmartCarController();
+
+    // 全局函数供HTML调用
+    function toggleConnection() {
+        app.toggleConnection();
+    }
+
+    function sendCommand(action) {
+        app.sendCommand(action);
+    }
+
+    function updateCamera() {
+        app.updateCamera();
+    }
+</script>
+</body>
+</html>
+            gap: 10px;
+        }
+        
+        .camera-settings input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        /* 状态监控卡片 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--input-border);
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--sub-text-color);
+        }
+
+        /* 控制区域 */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            width: 200px;
+            aspect-ratio: 1;
+        }
+
+        .btn-control {
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--btn-control-bg);
+            box-shadow: 3px 3px 6px var(--btn-control-shadow-dark), -3px -3px 6px var(--btn-control-shadow-light);
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            touch-action: manipulation; /* 优化触摸响应 */
+            place-self: center; /* 居中对齐 */
+        }
+
+        .btn-control:active {
+            box-shadow: inset 2px 2px 5px var(--btn-control-shadow-dark), inset -2px -2px 5px var(--btn-control-shadow-light);
+            transform: scale(0.95);
+            color: var(--primary-color);
+        }
+
+
+        /* 布局定位 */
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 3; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+        
+        .btn-center {
+            grid-column: 2; 
+            grid-row: 2; 
+            visibility: hidden; /* 占位用 */
+        }
+
+        /* 功能按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        #btn-connect {
+            font-size: 1.2rem;
+            padding: 14px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        .btn-primary:disabled {
+            background-color: #b2bec3;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 日志/消息区域 */
+        #log-area {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #b2bec3;
+            text-align: center;
+            margin-top: 10px;
+            min-height: 1.2em;
+        }
+
+        .theme-pos {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="theme-pos">
+        <select id="theme-selector" style="padding: 4px 8px; border-radius: 12px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); font-size: 0.75rem; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <option value="light">默认</option>
+            <option value="dark">暗黑</option>
+            <option value="cyber">科技</option>
+            <option value="nature">自然</option>
+        </select>
+    </div>
+    <header>
+        <h1>小车控制台</h1>
+        <div class="status-bar">
+            <div id="connection-status-indicator" class="connection-indicator"></div>
+            <span id="connection-status-text">未连接</span>
+        </div>
+    </header>
+
+    <!-- 摄像头模块 -->
+    <div class="camera-section">
+        <div class="camera-placeholder" id="camera-placeholder">
+            <p>等待视频信号...</p>
+            <small>请连接摄像头或输入流地址</small>
+        </div>
+        <img id="camera-stream" src="" alt="Camera Stream" onerror="this.style.display='none'; document.getElementById('camera-placeholder').style.display='flex';">
+    </div>
+    <div class="camera-settings">
+        <input type="text" id="stream-url-input" placeholder="输入视频流URL (如 http://192.168.1.x:81/stream)">
+        <button class="btn-primary" style="flex: 0 0 80px;" onclick="updateCamera()">加载</button>
+    </div>
+
+    <!-- 状态监控模块 -->
+    <div class="dashboard">
+        <div class="stat-card">
+            <div class="stat-label">电池电量</div>
+            <div class="stat-value" id="battery-value">-- %</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">当前速度</div>
+            <div class="stat-value" id="speed-value">-- cm/s</div>
+        </div>
+    </div>
+
+    <!-- 手动遥控模块 -->
+    <div class="control-panel">
+        <div class="d-pad">
+            <button class="btn-control btn-up" ontouchstart="sendCommand('FORWARD')" onmousedown="sendCommand('FORWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▲</button>
+            <button class="btn-control btn-left" ontouchstart="sendCommand('LEFT')" onmousedown="sendCommand('LEFT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">◀</button>
+            <button class="btn-control btn-down" ontouchstart="sendCommand('BACKWARD')" onmousedown="sendCommand('BACKWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▼</button>
+            <button class="btn-control btn-right" ontouchstart="sendCommand('RIGHT')" onmousedown="sendCommand('RIGHT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▶</button>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button id="btn-connect" class="btn-primary" onclick="toggleConnection()">连接蓝牙小车</button>
+    </div>
+
+    <div id="log-area">准备就绪</div>
+</div>
+
+<script>
+    // 配置区域 - 请根据实际硬件修改以下UUID
+    const CONFIG = {
+        // 蓝牙服务 UUID (通常为 128-bit 或 16-bit)
+        // 示例: '0000ffe0-0000-1000-8000-00805f9b34fb' (常见 HM-10 模块)
+        SERVICE_UUID: 0xFFE0, 
+        
+        // 特征值 UUID (用于读写数据)
+        // 示例: '0000ffe1-0000-1000-8000-00805f9b34fb'
+        CHARACTERISTIC_UUID: 0xFFE1,
+
+        // 指令集 (根据小车协议修改)
+        COMMANDS: {
+            FORWARD:  new Uint8Array([0x01]), // 示例指令：前进
+            BACKWARD: new Uint8Array([0x02]), // 示例指令：后退
+            LEFT:     new Uint8Array([0x03]), // 示例指令：左转
+            RIGHT:    new Uint8Array([0x04]), // 示例指令：右转
+            STOP:     new Uint8Array([0x00])  // 示例指令：停止
+        }
+    };
+
+    // 状态变量
+    let bluetoothDevice;
+    let bluetoothCharacteristic;
+    let isConnected = false;
+
+    // UI 元素引用
+    const statusText = document.getElementById('connection-status-text');
+    const statusIndicator = document.getElementById('connection-status-indicator');
+    const connectBtn = document.getElementById('btn-connect');
+    const logArea = document.getElementById('log-area');
+    const batteryValue = document.getElementById('battery-value');
+    const speedValue = document.getElementById('speed-value');
+
+    // 日志辅助函数
+    function log(message) {
+        console.log(message);
+        logArea.textContent = message;
+    }
+
+    // 1. 蓝牙连接逻辑
+    async function toggleConnection() {
+        if (isConnected) {
+            disconnect();
+        } else {
+            connect();
+        }
+    }
+
+    async function connect() {
+        try {
+            log('正在搜索蓝牙设备...');
+            
+            // 请求蓝牙设备
+            // 注意: 这里 acceptAllDevices: true 用于测试，实际生产建议使用 filters: [{ services: [CONFIG.SERVICE_UUID] }]
+            bluetoothDevice = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: [CONFIG.SERVICE_UUID]
+            });
+
+            bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+            log('连接到 GATT 服务器...');
+            const server = await bluetoothDevice.gatt.connect();
+
+            log('获取服务...');
+            const service = await server.getPrimaryService(CONFIG.SERVICE_UUID);
+
+            log('获取特征值...');
+            bluetoothCharacteristic = await service.getCharacteristic(CONFIG.CHARACTERISTIC_UUID);
+
+            // 启用通知（如果支持）以接收小车状态
+            try {
+                await bluetoothCharacteristic.startNotifications();
+                bluetoothCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+                log('已启用状态监听');
+            } catch (e) {
+                log('警告: 无法启用通知 (可能不支持)');
+            }
+
+            isConnected = true;
+            updateConnectionUI(true);
+            log('已连接到 ' + bluetoothDevice.name);
+
+        } catch (error) {
+            log('连接失败: ' + error);
+            console.error(error);
+        }
+    }
+
+    function disconnect() {
+        if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+            bluetoothDevice.gatt.disconnect();
+        }
+    }
+
+    function onDisconnected() {
+        isConnected = false;
+        updateConnectionUI(false);
+        log('蓝牙已断开');
+    }
+
+    function updateConnectionUI(connected) {
+        if (connected) {
+            statusText.textContent = '已连接';
+            statusIndicator.classList.add('connected');
+            connectBtn.textContent = '断开连接';
+            connectBtn.style.backgroundColor = '#d63031';
+        } else {
+            statusText.textContent = '未连接';
+            statusIndicator.classList.remove('connected');
+            connectBtn.textContent = '连接蓝牙小车';
+            connectBtn.style.backgroundColor = ''; // 恢复默认
+            // 重置状态显示
+            batteryValue.textContent = '-- %';
+            speedValue.textContent = '-- cm/s';
+        }
+    }
+
+    // 2. 指令发送逻辑
+    async function sendCommand(action) {
+        if (!isConnected || !bluetoothCharacteristic) {
+            log('未连接设备，无法发送: ' + action);
+            return;
+        }
+
+        const data = CONFIG.COMMANDS[action];
+        if (data) {
+            try {
+                await bluetoothCharacteristic.writeValue(data);
+                // log('发送指令: ' + action); // 可选：避免日志刷屏
+            } catch (error) {
+                log('发送失败: ' + error);
+            }
+        }
+    }
+
+    // 3. 状态接收逻辑 (通知处理)
+    function handleNotifications(event) {
+        const value = event.target.value;
+        // 假设数据格式: [标识符, 值] 
+        // 实际需根据协议解析。此处为模拟解析示例：
+        // 假设 0x01 开头是电量，0x02 开头是速度
+        
+        // 简单示例：直接显示接收到的原始数据长度
+        // log('收到数据: ' + value.byteLength + ' 字节');
+
+        // TODO: 请在此处实现具体的数据解析逻辑
+        /*
+        const dataView = new DataView(value.buffer);
+        const type = dataView.getUint8(0);
+        const val = dataView.getUint8(1);
+        
+        if (type === 0x01) {
+            batteryValue.textContent = val + ' %';
+        } else if (type === 0x02) {
+            speedValue.textContent = val + ' cm/s';
+        }
+        */
+       
+       // 模拟数据更新 (演示用)
+       // 实际开发中请删除这部分，使用上面的解析逻辑
+       if (Math.random() > 0.5) {
+           batteryValue.textContent = Math.floor(Math.random() * 20 + 80) + ' %';
+       } else {
+           speedValue.textContent = Math.floor(Math.random() * 50) + ' cm/s';
+       }
+    }
+
+    // 4. 摄像头逻辑
+    function updateCamera() {
+        const url = document.getElementById('stream-url-input').value;
+        const img = document.getElementById('camera-stream');
+        const placeholder = document.getElementById('camera-placeholder');
+
+        if (url) {
+            img.src = url;
+            img.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
+    }
+    
+    // 5. 主题切换逻辑
+    const themeSelector = document.getElementById('theme-selector');
+    
+    // 初始化主题
+    const savedTheme = localStorage.getItem('app-theme') || 'light';
+    setTheme(savedTheme);
+    themeSelector.value = savedTheme;
+
+    themeSelector.addEventListener('change', (e) => {
+        setTheme(e.target.value);
+    });
+
+    function setTheme(themeName) {
+        if (themeName === 'light') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', themeName);
+        }
+        localStorage.setItem('app-theme', themeName); // 保存用户选择
+        
+        // 更新图表颜色等动态内容（如果有）
+        updateButtonStyles();
+    }
+
+    function updateButtonStyles() {
+        // 重新计算按钮阴影颜色，确保在深色模式下可见
+        // CSS 变量已自动处理，此处为预留钩子
+    }
+
+    // 键盘控制支持 (WASD 或 方向键)
+    document.addEventListener('keydown', (e) => {
+        if (e.repeat) return; // 防止长按重复触发
+        switch(e.key) {
+            case 'ArrowUp':
+            case 'w':
+            case 'W':
+                sendCommand('FORWARD');
+                highlightButton('.btn-up', true);
+                break;
+            case 'ArrowDown':
+            case 's':
+            case 'S':
+                sendCommand('BACKWARD');
+                highlightButton('.btn-down', true);
+                break;
+            case 'ArrowLeft':
+            case 'a':
+            case 'A':
+                sendCommand('LEFT');
+                highlightButton('.btn-left', true);
+                break;
+            case 'ArrowRight':
+            case 'd':
+            case 'D':
+                sendCommand('RIGHT');
+                highlightButton('.btn-right', true);
+                break;
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        switch(e.key) {
+            case 'ArrowUp': case 'w': case 'W':
+            case 'ArrowDown': case 's': case 'S':
+            case 'ArrowLeft': case 'a': case 'A':
+            case 'ArrowRight': case 'd': case 'D':
+                sendCommand('STOP');
+                highlightButtonAllOff();
+                break;
+        }
+    });
+
+    function highlightButton(selector, active) {
+        const btn = document.querySelector(selector);
+        if (btn) {
+            if (active) {
+                btn.style.backgroundColor = '#e0e0e0';
+                btn.style.transform = 'scale(0.95)';
+            } else {
+                btn.style.backgroundColor = '';
+                btn.style.transform = '';
+            }
+        }
+    }
+
+    function highlightButtonAllOff() {
+        document.querySelectorAll('.btn-control').forEach(btn => {
+            btn.style.backgroundColor = '';
+            btn.style.transform = '';
+        });
+    }
+
+</script>
+</body>
+</html>
