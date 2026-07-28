@@ -3,1429 +3,801 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能小车控制终端</title>
+    <title>RC-Car Control Terminal</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            /* 默认主题 (Default Light) */
-            --primary-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-color: #2d3436;
-            --sub-text-color: #636e72;
-            --input-bg: #ffffff;
-            --input-border: #dfe6e9;
-            --success-color: #00b894;
-            --warning-color: #fdcb6e;
-            --danger-color: #d63031;
-            --shadow: 0 10px 20px rgba(0,0,0,0.08);
-            --radius: 16px;
-            --btn-control-bg: #f0f2f5;
-            --btn-control-shadow-light: #ffffff;
-            --btn-control-shadow-dark: #d1d9e6;
+            --bg: #0a0e17;
+            --surface: #111827;
+            --surface-2: #1f2937;
+            --border: #374151;
+            --accent: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.3);
+            --green: #22c55e;
+            --yellow: #eab308;
+            --red: #ef4444;
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+            --text-muted: #64748b;
+            --radius: 12px;
         }
-
-        /* 暗黑模式 (Dark Mode) */
-        [data-theme="dark"] {
-            --primary-color: #a29bfe;
-            --secondary-color: #6c5ce7;
-            --bg-color: #2d3436;
-            --card-bg: #353b48;
-            --text-color: #dfe6e9;
-            --sub-text-color: #b2bec3;
-            --input-bg: #2d3436;
-            --input-border: #636e72;
-            --success-color: #55efc4;
-            --warning-color: #ffeaa7;
-            --danger-color: #ff7675;
-            --shadow: 0 10px 20px rgba(0,0,0,0.3);
-            --btn-control-bg: #353b48;
-            --btn-control-shadow-light: #4a5160;
-            --btn-control-shadow-dark: #23272f;
-        }
-
-        /* 科技蓝 (Cyber Blue) */
-        [data-theme="cyber"] {
-            --primary-color: #00cec9;
-            --secondary-color: #81ecec;
-            --bg-color: #000000;
-            --card-bg: #0c1a24;
-            --text-color: #00cec9;
-            --sub-text-color: #4a69bd;
-            --input-bg: #0c1a24;
-            --input-border: #00cec9;
-            --success-color: #00b894;
-            --warning-color: #fdcb6e;
-            --danger-color: #d63031;
-            --shadow: 0 0 15px rgba(0, 206, 201, 0.2);
-            --radius: 4px;
-            --btn-control-bg: #0c1a24;
-            --btn-control-shadow-light: #152c3d;
-            --btn-control-shadow-dark: #050b0f;
-        }
-
-        /* 自然绿 (Nature Green) */
-        [data-theme="nature"] {
-            --primary-color: #27ae60;
-            --secondary-color: #2ecc71;
-            --bg-color: #eafaf1;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --sub-text-color: #7f8c8d;
-            --input-bg: #ffffff;
-            --input-border: #a9dfbf;
-            --success-color: #27ae60;
-            --warning-color: #f1c40f;
-            --danger-color: #c0392b;
-            --shadow: 0 10px 20px rgba(39, 174, 96, 0.1);
-            --radius: 20px;
-            --btn-control-bg: #eafaf1;
-            --btn-control-shadow-light: #ffffff;
-            --btn-control-shadow-dark: #d5dbdb;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none; /* 防止长按选中文字 */
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
-        }
-
         body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ---- Header ---- */
+        .header {
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
         }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .logo { font-size: 20px; font-weight: 700; color: var(--accent); }
+        .logo span { color: var(--text-dim); font-weight: 400; }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .status-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .header-right { display: flex; gap: 8px; }
+        .theme-btn {
+            background: var(--surface-2); border: 1px solid var(--border);
+            color: var(--text-dim); padding: 6px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 12px; transition: 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-        .container {
-            width: 100%;
-            max-width: 480px; /* 适配移动端宽度 */
-            background-color: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 4px;
-            padding-top: 10px; /* 为绝对定位的主题切换留出一点空间，或者保持紧凑 */
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 2px;
-        }
-
-        .status-bar {
-            font-size: 0.85rem;
-            color: var(--sub-text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .connection-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--danger-color);
-            transition: background-color 0.3s;
-        }
-
-        .connection-indicator.connected {
-            background-color: var(--success-color);
-        }
-
-        /* 摄像头区域 */
-        .camera-section {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background-color: var(--bg-color);
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--input-border);
-        }
-
-        .camera-placeholder {
-            text-align: center;
-            color: var(--sub-text-color);
-        }
-
-        #camera-stream {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none; /* 默认隐藏，有流时显示 */
-        }
-
-        .camera-settings {
-            margin-top: -10px;
-            display: flex;<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能小车控制终端</title>
-    <style>
-        :root {
-            /* 默认主题 (Default Light) */
-            --primary-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-color: #2d3436;
-            --sub-text-color: #636e72;
-            --input-bg: #ffffff;
-            --input-border: #dfe6e9;
-            --success-color: #00b894;
-            --warning-color: #fdcb6e;
-            --danger-color: #d63031;
-            --shadow: 0 10px 20px rgba(0,0,0,0.08);
-            --radius: 16px;
-            --btn-control-bg: #f0f2f5;
-            --btn-control-shadow-light: #ffffff;
-            --btn-control-shadow-dark: #d1d9e6;
-        }
-
-        /* 暗黑模式 (Dark Mode) */
-        [data-theme="dark"] {
-            --primary-color: #a29bfe;
-            --secondary-color: #6c5ce7;
-            --bg-color: #2d3436;
-            --card-bg: #353b48;
-            --text-color: #dfe6e9;
-            --sub-text-color: #b2bec3;
-            --input-bg: #2d3436;
-            --input-border: #636e72;
-            --success-color: #55efc4;
-            --warning-color: #ffeaa7;
-            --danger-color: #ff7675;
-            --shadow: 0 10px 20px rgba(0,0,0,0.3);
-            --btn-control-bg: #353b48;
-            --btn-control-shadow-light: #4a5160;
-            --btn-control-shadow-dark: #23272f;
-        }
-
-        /* 科技蓝 (Cyber Blue) */
-        [data-theme="cyber"] {
-            --primary-color: #00cec9;
-            --secondary-color: #81ecec;
-            --bg-color: #000000;
-            --card-bg: #0c1a24;
-            --text-color: #00cec9;
-            --sub-text-color: #4a69bd;
-            --input-bg: #0c1a24;
-            --input-border: #00cec9;
-            --success-color: #00b894;
-            --warning-color: #fdcb6e;
-            --danger-color: #d63031;
-            --shadow: 0 0 15px rgba(0, 206, 201, 0.2);
-            --radius: 4px;
-            --btn-control-bg: #0c1a24;
-            --btn-control-shadow-light: #152c3d;
-            --btn-control-shadow-dark: #050b0f;
-        }
-
-        /* 自然绿 (Nature Green) */
-        [data-theme="nature"] {
-            --primary-color: #27ae60;
-            --secondary-color: #2ecc71;
-            --bg-color: #eafaf1;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --sub-text-color: #7f8c8d;
-            --input-bg: #ffffff;
-            --input-border: #a9dfbf;
-            --success-color: #27ae60;
-            --warning-color: #f1c40f;
-            --danger-color: #c0392b;
-            --shadow: 0 10px 20px rgba(39, 174, 96, 0.1);
-            --radius: 20px;
-            --btn-control-bg: #eafaf1;
-            --btn-control-shadow-light: #ffffff;
-            --btn-control-shadow-dark: #d5dbdb;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none; /* 防止长按选中文字 */
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px; /* 适配移动端宽度 */
-            background-color: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 4px;
-            padding-top: 10px; /* 为绝对定位的主题切换留出一点空间，或者保持紧凑 */
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 2px;
-        }
-
-        .status-bar {
-            font-size: 0.85rem;
-            color: var(--sub-text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .connection-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--danger-color);
-            transition: background-color 0.3s;
-        }
-
-        .connection-indicator.connected {
-            background-color: var(--success-color);
-        }
-
-        /* 摄像头区域 */
-        .camera-section {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background-color: var(--bg-color);
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--input-border);
-        }
-
-        .camera-placeholder {
-            text-align: center;
-            color: var(--sub-text-color);
-        }
-
-        #camera-stream {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none; /* 默认隐藏，有流时显示 */
-        }
-
-        .camera-settings {
-            margin-top: -10px;
-            display: flex;
-            gap: 10px;
-        }
-        
-        .camera-settings input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid var(--input-border);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-            background-color: var(--input-bg);
-            color: var(--text-color);
-        }
-
-        /* 状态监控卡片 */
+        /* ---- Layout ---- */
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: 280px 1fr 300px;
+            grid-template-rows: auto 1fr;
+            gap: 16px;
+            padding: 16px;
+            max-width: 1600px;
+            margin: 0 auto;
+            min-height: calc(100vh - 60px);
         }
 
-        .stat-card {
-            background: var(--bg-color);
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid var(--input-border);
+        /* ---- Cards ---- */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
         }
-
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-top: 2px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--sub-text-color);
-        }
-
-        /* 控制区域 */
-        .control-panel {
+        .card-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            margin-top: 5px;
+            gap: 6px;
+        }
+        .card-title::before {
+            content: '';
+            width: 3px; height: 12px;
+            background: var(--accent);
+            border-radius: 2px;
         }
 
-        .d-pad {
+        /* ---- Telemetry Panel (Left) ---- */
+        .telemetry { grid-row: 1 / 3; }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .metric:last-child { border-bottom: none; }
+        .metric-label { font-size: 12px; color: var(--text-dim); }
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .metric-unit { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+        .metric-bar {
+            width: 100%; height: 4px; background: var(--surface-2);
+            border-radius: 2px; margin-top: 6px; overflow: hidden;
+        }
+        .metric-bar-fill {
+            height: 100%; border-radius: 2px;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        /* ---- Visualization (Center) ---- */
+        .viz-area { display: flex; flex-direction: column; gap: 16px; }
+        .car-canvas-wrap {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+        }
+        #carCanvas { width: 100%; height: 100%; display: block; }
+        .overlay-label {
+            position: absolute;
+            background: rgba(0,0,0,0.6);
+            color: var(--accent);
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .overlay-label.tl { top: 12px; left: 12px; }
+        .overlay-label.tr { top: 12px; right: 12px; }
+        .overlay-label.bl { bottom: 12px; left: 12px; }
+
+        /* Chart */
+        .chart-wrap {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            min-height: 200px;
+        }
+        #speedChart { width: 100%; height: 100%; display: block; }
+
+        /* ---- Control Panel (Right) ---- */
+        .control-panel { grid-row: 1 / 3; display: flex; flex-direction: column; gap: 16px; }
+
+        /* D-Pad */
+        .dpad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 5px;
+            gap: 6px;
             width: 200px;
-            aspect-ratio: 1;
+            height: 200px;
+            margin: 0 auto;
         }
-
-        .btn-control {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 50%;
-            background-color: var(--btn-control-bg);
-            box-shadow: 3px 3px 6px var(--btn-control-shadow-dark), -3px -3px 6px var(--btn-control-shadow-light);
+        .dpad-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 18px;
             cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-color);
             display: flex;
-            justify-content: center;
             align-items: center;
-            transition: all 0.2s ease;
-            touch-action: manipulation; /* 优化触摸响应 */
-            place-self: center; /* 居中对齐 */
+            justify-content: center;
+            transition: all 0.15s;
+            user-select: none;
         }
-
-        .btn-control:active {
-            box-shadow: inset 2px 2px 5px var(--btn-control-shadow-dark), inset -2px -2px 5px var(--btn-control-shadow-light);
-            transform: scale(0.95);
-            color: var(--primary-color);
-        }
-
-
-        /* 布局定位 */
-        .btn-up { grid-column: 2; grid-row: 1; }
-        .btn-left { grid-column: 1; grid-row: 2; }
-        .btn-down { grid-column: 2; grid-row: 3; }
-        .btn-right { grid-column: 3; grid-row: 2; }
-        
-        .btn-center {
-            grid-column: 2; 
-            grid-row: 2; 
-            visibility: hidden; /* 占位用 */
-        }
-
-        /* 功能按钮 */
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-        }
-
-        #btn-connect {
-            font-size: 1.2rem;
-            padding: 14px;
+        .dpad-btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+        .dpad-btn:active { transform: scale(0.92); }
+        .dpad-btn.stop {
+            background: var(--red);
+            border-color: var(--red);
+            color: white;
+            font-size: 12px;
             font-weight: 700;
         }
+        .dpad-btn.stop:hover { background: #dc2626; }
+        .dpad-blank { visibility: hidden; }
 
-        .btn-primary {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
+        /* Speed Slider */
+        .speed-control { text-align: center; }
+        .speed-control label { font-size: 12px; color: var(--text-dim); }
+        .speed-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            background: var(--surface-2);
+            border-radius: 3px;
+            outline: none;
+            margin: 10px 0;
+        }
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
-            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 0 10px var(--accent-glow);
         }
+        .speed-val { font-size: 24px; font-weight: 700; color: var(--accent); }
 
-        .btn-primary:active {
-            transform: translateY(2px);
+        /* PID Params */
+        .pid-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
         }
-
-        .btn-primary:disabled {
-            background-color: #b2bec3;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* 日志/消息区域 */
-        #log-area {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #b2bec3;
+        .pid-item {
             text-align: center;
-            margin-top: 10px;
-            min-height: 1.2em;
+            padding: 8px;
+            background: var(--surface-2);
+            border-radius: 8px;
+        }
+        .pid-item label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        .pid-item input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            font-family: inherit;
+            outline: none;
         }
 
-        .theme-pos {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            z-index: 100;
+        /* Mode selector */
+        .mode-selector { display: flex; gap: 6px; }
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-dim);
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+        .mode-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Command Log */
+        .log-wrap {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 11px;
+            max-height: 200px;
+        }
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+        .log-time { color: var(--text-muted); min-width: 70px; }
+        .log-cmd { color: var(--accent); font-weight: 600; }
+        .log-entry:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+        /* ---- Footer ---- */
+        .footer {
+            text-align: center;
+            padding: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 1200px) {
+            .dashboard { grid-template-columns: 1fr; grid-template-rows: auto; }
+            .telemetry { grid-row: auto; }
+            .control-panel { grid-row: auto; }
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="theme-pos">
-        <select id="theme-selector" style="padding: 4px 8px; border-radius: 12px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); font-size: 0.75rem; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-            <option value="light">默认</option>
-            <option value="dark">暗黑</option>
-            <option value="cyber">科技</option>
-            <option value="nature">自然</option>
-        </select>
-    </div>
-    <header>
-        <h1>小车控制台</h1>
-        <div class="status-bar">
-            <div id="connection-status-indicator" class="connection-indicator"></div>
-            <span id="connection-status-text">未连接</span>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">RC-Car <span>v2.0</span></div>
+            <div class="status-dot" id="statusDot"></div>
+            <span style="font-size:12px;color:var(--text-dim)" id="statusText">SIMULATED</span>
         </div>
-    </header>
-
-    <!-- 摄像头模块 -->
-    <div class="camera-section">
-        <div class="camera-placeholder" id="camera-placeholder">
-            <p>等待视频信号...</p>
-            <small>请连接摄像头或输入流地址</small>
+        <div class="header-right">
+            <button class="theme-btn" onclick="toggleTheme()">Dark/Light</button>
+            <button class="theme-btn" onclick="resetSim()">Reset</button>
         </div>
-        <img id="camera-stream" src="" alt="Camera Stream" onerror="this.style.display='none'; document.getElementById('camera-placeholder').style.display='flex';">
-    </div>
-    <div class="camera-settings">
-        <input type="text" id="stream-url-input" placeholder="输入视频流URL (如 http://192.168.1.x:81/stream)">
-        <button class="btn-primary" style="flex: 0 0 80px;" onclick="updateCamera()">加载</button>
     </div>
 
-    <!-- 状态监控模块 -->
+    <!-- Dashboard -->
     <div class="dashboard">
-        <div class="stat-card">
-            <div class="stat-label">电池电量</div>
-            <div class="stat-value" id="battery-value">-- %</div>
+        <!-- Left: Telemetry -->
+        <div class="card telemetry">
+            <div class="card-title">Telemetry</div>
+            <div class="metric">
+                <span class="metric-label">Left Wheel</span>
+                <span><span class="metric-value" id="valLeftSpeed">0</span><span class="metric-unit">cm/s</span></span>
+            </div>
+            <div class="metric-bar"><div class="metric-bar-fill" id="barLeft" style="width:0;background:var(--green)"></div></div>
+            <div class="metric">
+                <span class="metric-label">Right Wheel</span>
+                <span><span class="metric-value" id="valRightSpeed">0</span><span class="metric-unit">cm/s</span></span>
+            </div>
+            <div class="metric-bar"><div class="metric-bar-fill" id="barRight" style="width:0;background:var(--green)"></div></div>
+            <div class="metric">
+                <span class="metric-label">Linear Speed</span>
+                <span><span class="metric-value" id="valLinear">0</span><span class="metric-unit">cm/s</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Angular Speed</span>
+                <span><span class="metric-value" id="valAngular">0</span><span class="metric-unit">rad/s</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">PID Left Output</span>
+                <span><span class="metric-value" id="valPidL">0</span><span class="metric-unit">%</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">PID Right Output</span>
+                <span><span class="metric-value" id="valPidR">0</span><span class="metric-unit">%</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Encoder L</span>
+                <span><span class="metric-value" id="valEncL">0</span><span class="metric-unit">ticks</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Encoder R</span>
+                <span><span class="metric-value" id="valEncR">0</span><span class="metric-unit">ticks</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Uptime</span>
+                <span><span class="metric-value" id="valUptime">0</span><span class="metric-unit">s</span></span>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">当前速度</div>
-            <div class="stat-value" id="speed-value">-- cm/s</div>
+
+        <!-- Center: Visualization -->
+        <div class="viz-area">
+            <div class="car-canvas-wrap">
+                <canvas id="carCanvas"></canvas>
+                <div class="overlay-label tl" id="overlayState">Mode: FOLLOW</div>
+                <div class="overlay-label tr" id="overlayCmd">Last: --</div>
+                <div class="overlay-label bl" id="overlayFps">FPS: 60</div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="speedChart"></canvas>
+            </div>
         </div>
-    </div>
 
-    <!-- 手动遥控模块 -->
-    <div class="control-panel">
-        <div class="d-pad">
-            <button class="btn-control btn-up" ontouchstart="sendCommand('FORWARD')" onmousedown="sendCommand('FORWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▲</button>
-            <button class="btn-control btn-left" ontouchstart="sendCommand('LEFT')" onmousedown="sendCommand('LEFT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">◀</button>
-            <button class="btn-control btn-down" ontouchstart="sendCommand('BACKWARD')" onmousedown="sendCommand('BACKWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▼</button>
-            <button class="btn-control btn-right" ontouchstart="sendCommand('RIGHT')" onmousedown="sendCommand('RIGHT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▶</button>
-        </div>
-    </div>
+        <!-- Right: Control -->
+        <div class="card control-panel">
+            <div class="card-title">Control</div>
 
-    <div class="action-buttons">
-        <button id="btn-connect" class="btn-primary" onclick="toggleConnection()">连接蓝牙小车</button>
-    </div>
+            <!-- Mode Selector -->
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('MANUAL',this)">Manual</button>
+                <button class="mode-btn" onclick="setMode('AUTO',this)">Auto</button>
+                <button class="mode-btn" onclick="setMode('PID_TUNE',this)">PID Tune</button>
+            </div>
 
-    <div id="log-area">准备就绪</div>
-</div>
+            <!-- D-Pad -->
+            <div class="dpad">
+                <div class="dpad-btn" onclick="sendCmd('AVOID_LEFT')">↰</div>
+                <div class="dpad-btn" onclick="sendCmd('FORWARD')">↑</div>
+                <div class="dpad-btn" onclick="sendCmd('AVOID_RIGHT')">↱</div>
+                <div class="dpad-btn" onclick="sendCmd('LEFT')">←</div>
+                <div class="dpad-btn stop" onclick="sendCmd('STOP')">STOP</div>
+                <div class="dpad-btn" onclick="sendCmd('RIGHT')">→</div>
+                <div class="dpad-btn" onclick="sendCmd('LITTLELEFT')">⇤</div>
+                <div class="dpad-btn" onclick="sendCmd('BACK')">↓</div>
+                <div class="dpad-btn" onclick="sendCmd('LITTLERIGHT')">⇥</div>
+            </div>
 
-<script>
-    // 应用程序类
-    class SmartCarController {
-        constructor() {
-            // 配置区域 - 请根据实际硬件修改以下UUID
-            this.config = {
-                // 蓝牙服务 UUID (通常为 128-bit 或 16-bit)
-                // 示例: '0000ffe0-0000-1000-8000-00805f9b34fb' (常见 HM-10 模块)
-                SERVICE_UUID: 0xFFE0, 
-                
-                // 特征值 UUID (用于读写数据)
-                // 示例: '0000ffe1-0000-1000-8000-00805f9b34fb'
-                CHARACTERISTIC_UUID: 0xFFE1,
+            <!-- Speed Control -->
+            <div class="speed-control">
+                <label>Target Speed</label>
+                <input type="range" class="speed-slider" id="speedSlider" min="0" max="100" value="40" oninput="updateSpeed(this.value)">
+                <div class="speed-val" id="speedVal">40</div>
+            </div>
 
-                // 指令集 (根据小车协议修改)
-                COMMANDS: {
-                    FORWARD:  new Uint8Array([0x01]), // 示例指令：前进
-                    BACKWARD: new Uint8Array([0x02]), // 示例指令：后退
-                    LEFT:     new Uint8Array([0x03]), // 示例指令：左转
-                    RIGHT:    new Uint8Array([0x04]), // 示例指令：右转
-                    STOP:     new Uint8Array([0x00])  // 示例指令：停止
-                }
-            };
+            <!-- PID Params -->
+            <div class="card-title">PID Parameters</div>
+            <div class="pid-grid">
+                <div class="pid-item"><label>Kp</label><input type="number" step="0.01" value="0.20" id="pidKp"></div>
+                <div class="pid-item"><label>Ki</label><input type="number" step="0.01" value="0.27" id="pidKi"></div>
+                <div class="pid-item"><label>Kd</label><input type="number" step="0.01" value="0.01" id="pidKd"></div>
+            </div>
 
-            // 状态变量
-            this.bluetoothDevice = null;
-            this.bluetoothCharacteristic = null;
-            this.isConnected = false;
-            
-            // 按钮状态跟踪
-            this.buttonStates = {
-                up: false,
-                down: false,
-                left: false,
-                right: false
-            };
-            
-            // 当前活动命令
-            this.activeCommand = null;
-            
-            // 初始化UI元素引用
-            this.initElements();
-            
-            // 绑定事件
-            this.bindEvents();
-            
-            // 初始化主题
-            this.initializeTheme();
-            
-            // 设置键盘事件处理器
-            this.setupKeyboardControls();
-            
-            // 设置默认状态
-            this.updateConnectionUI(false);
-        }
+            <!-- Servo -->
+            <div class="card-title">Servo</div>
+            <div style="display:flex;gap:6px;">
+                <button class="dpad-btn" style="flex:1;font-size:12px" onclick="sendCmd('BLUE_OPEN')">Open</button>
+                <button class="dpad-btn" style="flex:1;font-size:12px" onclick="sendCmd('BLUE_GRAB')">Grab</button>
+                <button class="dpad-btn" style="flex:1;font-size:12px" onclick="sendCmd('BLUE_TURN')">Turn</button>
+            </div>
 
-        initElements() {
-            this.statusText = document.getElementById('connection-status-text');
-            this.statusIndicator = document.getElementById('connection-status-indicator');
-            this.connectBtn = document.getElementById('btn-connect');
-            this.logArea = document.getElementById('log-area');
-            this.batteryValue = document.getElementById('battery-value');
-            this.speedValue = document.getElementById('speed-value');
-            this.streamUrlInput = document.getElementById('stream-url-input');
-            this.cameraStream = document.getElementById('camera-stream');
-            this.cameraPlaceholder = document.getElementById('camera-placeholder');
-            this.themeSelector = document.getElementById('theme-selector');
-        }
-
-        bindEvents() {
-            // 主题切换事件
-            this.themeSelector.addEventListener('change', (e) => {
-                this.setTheme(e.target.value);
-            });
-        }
-
-        initializeTheme() {
-            const savedTheme = localStorage.getItem('app-theme') || 'light';
-            this.setTheme(savedTheme);
-            this.themeSelector.value = savedTheme;
-        }
-
-        setTheme(themeName) {
-            if (themeName === 'light') {
-                document.documentElement.removeAttribute('data-theme');
-            } else {
-                document.documentElement.setAttribute('data-theme', themeName);
-            }
-            localStorage.setItem('app-theme', themeName); // 保存用户选择
-        }
-
-        // 日志辅助函数
-        log(message) {
-            console.log(message);
-            this.logArea.textContent = message;
-        }
-
-        // 蓝牙连接逻辑
-        async toggleConnection() {
-            if (this.isConnected) {
-                await this.disconnect();
-            } else {
-                await this.connect();
-            }
-        }
-
-        async connect() {
-            try {
-                this.log('正在搜索蓝牙设备...');
-                
-                // 请求蓝牙设备
-                // 注意: 这里 acceptAllDevices: true 用于测试，实际生产建议使用 filters: [{ services: [CONFIG.SERVICE_UUID] }]
-                this.bluetoothDevice = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
-                    optionalServices: [this.config.SERVICE_UUID]
-                });
-
-                this.bluetoothDevice.addEventListener('gattserverdisconnected', () => this.onDisconnected());
-
-                this.log('连接到 GATT 服务器...');
-                const server = await this.bluetoothDevice.gatt.connect();
-
-                this.log('获取服务...');
-                const service = await server.getPrimaryService(this.config.SERVICE_UUID);
-
-                this.log('获取特征值...');
-                this.bluetoothCharacteristic = await service.getCharacteristic(this.config.CHARACTERISTIC_UUID);
-
-                // 启用通知（如果支持）以接收小车状态
-                try {
-                    await this.bluetoothCharacteristic.startNotifications();
-                    this.bluetoothCharacteristic.addEventListener('characteristicvaluechanged', (event) => this.handleNotifications(event));
-                    this.log('已启用状态监听');
-                } catch (e) {
-                    this.log('警告: 无法启用通知 (可能不支持)');
-                }
-
-                this.isConnected = true;
-                this.updateConnectionUI(true);
-                this.log('已连接到 ' + this.bluetoothDevice.name);
-
-            } catch (error) {
-                this.log('连接失败: ' + error);
-                console.error(error);
-            }
-        }
-
-        async disconnect() {
-            if (this.bluetoothDevice && this.bluetoothDevice.gatt.connected) {
-                this.bluetoothDevice.gatt.disconnect();
-            }
-        }
-
-        onDisconnected() {
-            this.isConnected = false;
-            this.updateConnectionUI(false);
-            this.log('蓝牙已断开');
-        }
-
-        updateConnectionUI(connected) {
-            if (connected) {
-                this.statusText.textContent = '已连接';
-                this.statusIndicator.classList.add('connected');
-                this.connectBtn.textContent = '断开连接';
-                this.connectBtn.style.backgroundColor = '#d63031';
-            } else {
-                this.statusText.textContent = '未连接';
-                this.statusIndicator.classList.remove('connected');
-                this.connectBtn.textContent = '连接蓝牙小车';
-                this.connectBtn.style.backgroundColor = ''; // 恢复默认
-                // 重置状态显示
-                this.batteryValue.textContent = '-- %';
-                this.speedValue.textContent = '-- cm/s';
-            }
-        }
-
-        // 指令发送逻辑
-        async sendCommand(action) {
-            if (!this.isConnected || !this.bluetoothCharacteristic) {
-                this.log('未连接设备，无法发送: ' + action);
-                return;
-            }
-
-            const data = this.config.COMMANDS[action];
-            if (data) {
-                try {
-                    await this.bluetoothCharacteristic.writeValue(data);
-                    this.activeCommand = action;
-                    // log('发送指令: ' + action); // 可选：避免日志刷屏
-                } catch (error) {
-                    this.log('发送失败: ' + error);
-                }
-            }
-        }
-
-        // 智能停止：只有当所有方向按键都松开时才发送停止命令
-        smartStop(command) {
-            // 更新按钮状态
-            switch(command) {
-                case 'FORWARD':
-                    this.buttonStates.up = false;
-                    break;
-                case 'BACKWARD':
-                    this.buttonStates.down = false;
-                    break;
-                case 'LEFT':
-                    this.buttonStates.left = false;
-                    break;
-                case 'RIGHT':
-                    this.buttonStates.right = false;
-                    break;
-            }
-            
-            // 如果所有方向按键都松开了，则发送停止命令
-            if (!this.buttonStates.up && !this.buttonStates.down && 
-                !this.buttonStates.left && !this.buttonStates.right) {
-                this.sendCommand('STOP');
-            }
-        }
-
-        // 状态接收逻辑 (通知处理)
-        handleNotifications(event) {
-            const value = event.target.value;
-            // 假设数据格式: [标识符, 值] 
-            // 实际需根据协议解析。此处为模拟解析示例：
-            // 假设 0x01 开头是电量，0x02 开头是速度
-            
-            // 简单示例：直接显示接收到的原始数据长度
-            // log('收到数据: ' + value.byteLength + ' 字节');
-
-            // TODO: 请在此处实现具体的数据解析逻辑
-            /*
-            const dataView = new DataView(value.buffer);
-            const type = dataView.getUint8(0);
-            const val = dataView.getUint8(1);
-            
-            if (type === 0x01) {
-                this.batteryValue.textContent = val + ' %';
-            } else if (type === 0x02) {
-                this.speedValue.textContent = val + ' cm/s';
-            }
-            */
-           
-           // 模拟数据更新 (演示用)
-           // 实际开发中请删除这部分，使用上面的解析逻辑
-           if (Math.random() > 0.5) {
-               this.batteryValue.textContent = Math.floor(Math.random() * 20 + 80) + ' %';
-           } else {
-               this.speedValue.textContent = Math.floor(Math.random() * 50) + ' cm/s';
-           }
-        }
-
-        // 摄像头逻辑
-        updateCamera() {
-            const url = this.streamUrlInput.value;
-
-            if (url) {
-                this.cameraStream.src = url;
-                this.cameraStream.style.display = 'block';
-                this.cameraPlaceholder.style.display = 'none';
-            } else {
-                this.log('请输入有效的视频流URL');
-            }
-        }
-        
-        // 键盘控制支持 (WASD 或 方向键)
-        setupKeyboardControls() {
-            document.addEventListener('keydown', (e) => {
-                if (e.repeat) return; // 防止长按重复触发
-                
-                switch(e.key) {
-                    case 'ArrowUp':
-                    case 'w':
-                    case 'W':
-                        this.buttonStates.up = true;
-                        this.sendCommand('FORWARD');
-                        this.highlightButton('.btn-up', true);
-                        break;
-                    case 'ArrowDown':
-                    case 's':
-                    case 'S':
-                        this.buttonStates.down = true;
-                        this.sendCommand('BACKWARD');
-                        this.highlightButton('.btn-down', true);
-                        break;
-                    case 'ArrowLeft':
-                    case 'a':
-                    case 'A':
-                        this.buttonStates.left = true;
-                        this.sendCommand('LEFT');
-                        this.highlightButton('.btn-left', true);
-                        break;
-                    case 'ArrowRight':
-                    case 'd':
-                    case 'D':
-                        this.buttonStates.right = true;
-                        this.sendCommand('RIGHT');
-                        this.highlightButton('.btn-right', true);
-                        break;
-                }
-            });
-
-            document.addEventListener('keyup', (e) => {
-                switch(e.key) {
-                    case 'ArrowUp': 
-                    case 'w': 
-                    case 'W':
-                        this.buttonStates.up = false;
-                        this.smartStop('FORWARD');
-                        this.highlightButton('.btn-up', false);
-                        break;
-                    case 'ArrowDown': 
-                    case 's': 
-                    case 'S':
-                        this.buttonStates.down = false;
-                        this.smartStop('BACKWARD');
-                        this.highlightButton('.btn-down', false);
-                        break;
-                    case 'ArrowLeft': 
-                    case 'a': 
-                    case 'A':
-                        this.buttonStates.left = false;
-                        this.smartStop('LEFT');
-                        this.highlightButton('.btn-left', false);
-                        break;
-                    case 'ArrowRight': 
-                    case 'd': 
-                    case 'D':
-                        this.buttonStates.right = false;
-                        this.smartStop('RIGHT');
-                        this.highlightButton('.btn-right', false);
-                        break;
-                }
-            });
-        }
-
-        highlightButton(selector, active) {
-            const btn = document.querySelector(selector);
-            if (btn) {
-                if (active) {
-                    btn.style.backgroundColor = 'var(--btn-control-shadow-light)';
-                    btn.style.transform = 'scale(0.95)';
-                } else {
-                    btn.style.backgroundColor = '';
-                    btn.style.transform = '';
-                }
-            }
-        }
-    }
-
-    // 初始化应用
-    const app = new SmartCarController();
-
-    // 全局函数供HTML调用
-    function toggleConnection() {
-        app.toggleConnection();
-    }
-
-    function sendCommand(action) {
-        app.sendCommand(action);
-    }
-
-    function updateCamera() {
-        app.updateCamera();
-    }
-</script>
-</body>
-</html>
-            gap: 10px;
-        }
-        
-        .camera-settings input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid var(--input-border);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-            background-color: var(--input-bg);
-            color: var(--text-color);
-        }
-
-        /* 状态监控卡片 */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .stat-card {
-            background: var(--bg-color);
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid var(--input-border);
-        }
-
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-top: 2px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--sub-text-color);
-        }
-
-        /* 控制区域 */
-        .control-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .d-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 5px;
-            width: 200px;
-            aspect-ratio: 1;
-        }
-
-        .btn-control {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 50%;
-            background-color: var(--btn-control-bg);
-            box-shadow: 3px 3px 6px var(--btn-control-shadow-dark), -3px -3px 6px var(--btn-control-shadow-light);
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.2s ease;
-            touch-action: manipulation; /* 优化触摸响应 */
-            place-self: center; /* 居中对齐 */
-        }
-
-        .btn-control:active {
-            box-shadow: inset 2px 2px 5px var(--btn-control-shadow-dark), inset -2px -2px 5px var(--btn-control-shadow-light);
-            transform: scale(0.95);
-            color: var(--primary-color);
-        }
-
-
-        /* 布局定位 */
-        .btn-up { grid-column: 2; grid-row: 1; }
-        .btn-left { grid-column: 1; grid-row: 2; }
-        .btn-down { grid-column: 2; grid-row: 3; }
-        .btn-right { grid-column: 3; grid-row: 2; }
-        
-        .btn-center {
-            grid-column: 2; 
-            grid-row: 2; 
-            visibility: hidden; /* 占位用 */
-        }
-
-        /* 功能按钮 */
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-        }
-
-        #btn-connect {
-            font-size: 1.2rem;
-            padding: 14px;
-            font-weight: 700;
-        }
-
-        .btn-primary {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
-            transition: transform 0.2s, background-color 0.2s;
-        }
-
-        .btn-primary:active {
-            transform: translateY(2px);
-        }
-
-        .btn-primary:disabled {
-            background-color: #b2bec3;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* 日志/消息区域 */
-        #log-area {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #b2bec3;
-            text-align: center;
-            margin-top: 10px;
-            min-height: 1.2em;
-        }
-
-        .theme-pos {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            z-index: 100;
-        }
-
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="theme-pos">
-        <select id="theme-selector" style="padding: 4px 8px; border-radius: 12px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); font-size: 0.75rem; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-            <option value="light">默认</option>
-            <option value="dark">暗黑</option>
-            <option value="cyber">科技</option>
-            <option value="nature">自然</option>
-        </select>
-    </div>
-    <header>
-        <h1>小车控制台</h1>
-        <div class="status-bar">
-            <div id="connection-status-indicator" class="connection-indicator"></div>
-            <span id="connection-status-text">未连接</span>
-        </div>
-    </header>
-
-    <!-- 摄像头模块 -->
-    <div class="camera-section">
-        <div class="camera-placeholder" id="camera-placeholder">
-            <p>等待视频信号...</p>
-            <small>请连接摄像头或输入流地址</small>
-        </div>
-        <img id="camera-stream" src="" alt="Camera Stream" onerror="this.style.display='none'; document.getElementById('camera-placeholder').style.display='flex';">
-    </div>
-    <div class="camera-settings">
-        <input type="text" id="stream-url-input" placeholder="输入视频流URL (如 http://192.168.1.x:81/stream)">
-        <button class="btn-primary" style="flex: 0 0 80px;" onclick="updateCamera()">加载</button>
-    </div>
-
-    <!-- 状态监控模块 -->
-    <div class="dashboard">
-        <div class="stat-card">
-            <div class="stat-label">电池电量</div>
-            <div class="stat-value" id="battery-value">-- %</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">当前速度</div>
-            <div class="stat-value" id="speed-value">-- cm/s</div>
+            <!-- Log -->
+            <div class="card-title">Command Log</div>
+            <div class="log-wrap" id="logWrap"></div>
         </div>
     </div>
 
-    <!-- 手动遥控模块 -->
-    <div class="control-panel">
-        <div class="d-pad">
-            <button class="btn-control btn-up" ontouchstart="sendCommand('FORWARD')" onmousedown="sendCommand('FORWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▲</button>
-            <button class="btn-control btn-left" ontouchstart="sendCommand('LEFT')" onmousedown="sendCommand('LEFT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">◀</button>
-            <button class="btn-control btn-down" ontouchstart="sendCommand('BACKWARD')" onmousedown="sendCommand('BACKWARD')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▼</button>
-            <button class="btn-control btn-right" ontouchstart="sendCommand('RIGHT')" onmousedown="sendCommand('RIGHT')" ontouchend="sendCommand('STOP')" onmouseup="sendCommand('STOP')">▶</button>
-        </div>
+    <div class="footer">
+        RC-Car &mdash; STM32F103 + FreeRTOS + RDK X5 Vision &mdash;
+        <a href="https://github.com/Sering-Hong/RC-Car" target="_blank">GitHub</a>
     </div>
 
-    <div class="action-buttons">
-        <button id="btn-connect" class="btn-primary" onclick="toggleConnection()">连接蓝牙小车</button>
-    </div>
-
-    <div id="log-area">准备就绪</div>
-</div>
-
-<script>
-    // 配置区域 - 请根据实际硬件修改以下UUID
-    const CONFIG = {
-        // 蓝牙服务 UUID (通常为 128-bit 或 16-bit)
-        // 示例: '0000ffe0-0000-1000-8000-00805f9b34fb' (常见 HM-10 模块)
-        SERVICE_UUID: 0xFFE0, 
-        
-        // 特征值 UUID (用于读写数据)
-        // 示例: '0000ffe1-0000-1000-8000-00805f9b34fb'
-        CHARACTERISTIC_UUID: 0xFFE1,
-
-        // 指令集 (根据小车协议修改)
-        COMMANDS: {
-            FORWARD:  new Uint8Array([0x01]), // 示例指令：前进
-            BACKWARD: new Uint8Array([0x02]), // 示例指令：后退
-            LEFT:     new Uint8Array([0x03]), // 示例指令：左转
-            RIGHT:    new Uint8Array([0x04]), // 示例指令：右转
-            STOP:     new Uint8Array([0x00])  // 示例指令：停止
-        }
+    <script>
+    // ==================== Simulation Engine ====================
+    const SIM = {
+        linear: 0, angular: 0,
+        targetLinear: 0, targetAngular: 0,
+        leftSpeed: 0, rightSpeed: 0,
+        pidL: 0, pidR: 0,
+        encL: 0, encR: 0,
+        mode: 'MANUAL',
+        lastCmd: '--',
+        startTime: Date.now(),
+        speedHistory: [],
+        carX: 0.5, carY: 0.5, carAngle: 0,
     };
 
-    // 状态变量
-    let bluetoothDevice;
-    let bluetoothCharacteristic;
-    let isConnected = false;
+    const WHEEL_BASE = 16;
+    const SPEED_SCALE = 0.3;
 
-    // UI 元素引用
-    const statusText = document.getElementById('connection-status-text');
-    const statusIndicator = document.getElementById('connection-status-indicator');
-    const connectBtn = document.getElementById('btn-connect');
-    const logArea = document.getElementById('log-area');
-    const batteryValue = document.getElementById('battery-value');
-    const speedValue = document.getElementById('speed-value');
-
-    // 日志辅助函数
-    function log(message) {
-        console.log(message);
-        logArea.textContent = message;
+    function sendCmd(cmd) {
+        SIM.lastCmd = cmd;
+        const spd = parseInt(document.getElementById('speedSlider').value);
+        const map = {
+            'FORWARD': [spd, 0], 'BACK': [-spd, 0],
+            'LEFT': [-spd * 0.3, -2], 'RIGHT': [-spd * 0.3, 2],
+            'LITTLELEFT': [-spd * 0.8, -0.3], 'LITTLERIGHT': [-spd * 0.8, 0.3],
+            'AVOID_LEFT': [0, -2.5], 'AVOID_RIGHT': [0, 2.5],
+            'AVOID_FORWARD': [-spd * 0.7, 0], 'AVOID_BACK': [spd, 0],
+            'STOP': [0, 0],
+        };
+        const [lin, ang] = map[cmd] || [0, 0];
+        SIM.targetLinear = lin;
+        SIM.targetAngular = ang;
+        addLog(cmd);
     }
 
-    // 1. 蓝牙连接逻辑
-    async function toggleConnection() {
-        if (isConnected) {
-            disconnect();
-        } else {
-            connect();
+    function updateSpeed(val) {
+        document.getElementById('speedVal').textContent = val;
+    }
+
+    function setMode(mode, btn) {
+        SIM.mode = mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function toggleTheme() {
+        const r = document.documentElement;
+        r.style.setProperty('--bg', r.style.getPropertyValue('--bg') === '#0a0e17' ? '#f0f2f5' : '#0a0e17');
+        r.style.setProperty('--surface', r.style.getPropertyValue('--surface') === '#111827' ? '#ffffff' : '#111827');
+        r.style.setProperty('--surface-2', r.style.getPropertyValue('--surface-2') === '#1f2937' ? '#f1f5f9' : '#1f2937');
+        r.style.setProperty('--border', r.style.getPropertyValue('--border') === '#374151' ? '#e2e8f0' : '#374151');
+        r.style.setProperty('--text', r.style.getPropertyValue('--text') === '#f1f5f9' ? '#0f172a' : '#f1f5f9');
+        r.style.setProperty('--text-dim', r.style.getPropertyValue('--text-dim') === '#94a3b8' ? '#475569' : '#94a3b8');
+        r.style.setProperty('--text-muted', r.style.getPropertyValue('--text-muted') === '#64748b' ? '#94a3b8' : '#64748b');
+    }
+
+    function resetSim() {
+        SIM.linear = 0; SIM.angular = 0;
+        SIM.targetLinear = 0; SIM.targetAngular = 0;
+        SIM.leftSpeed = 0; SIM.rightSpeed = 0;
+        SIM.pidL = 0; SIM.pidR = 0;
+        SIM.encL = 0; SIM.encR = 0;
+        SIM.carX = 0.5; SIM.carY = 0.5; SIM.carAngle = 0;
+        SIM.speedHistory = [];
+        document.getElementById('logWrap').innerHTML = '';
+    }
+
+    // ==================== Simulation Loop ====================
+    function simTick() {
+        // Smooth approach to target
+        SIM.linear += (SIM.targetLinear - SIM.linear) * 0.08;
+        SIM.angular += (SIM.targetAngular - SIM.angular) * 0.1;
+
+        // Differential kinematics
+        const halfBase = WHEEL_BASE / 2;
+        const targetL = SIM.linear - SIM.angular * halfBase;
+        const targetR = SIM.linear + SIM.angular * halfBase;
+
+        // PID-like response
+        SIM.leftSpeed += (targetL - SIM.leftSpeed) * 0.15;
+        SIM.rightSpeed += (targetR - SIM.rightSpeed) * 0.15;
+
+        // Add noise
+        SIM.leftSpeed += (Math.random() - 0.5) * 0.5;
+        SIM.rightSpeed += (Math.random() - 0.5) * 0.5;
+
+        // PID output
+        SIM.pidL = Math.max(-100, Math.min(100, SIM.leftSpeed * 2.5));
+        SIM.pidR = Math.max(-100, Math.min(100, SIM.rightSpeed * 2.5));
+
+        // Encoders
+        SIM.encL += SIM.leftSpeed * 0.3;
+        SIM.encR += SIM.rightSpeed * 0.3;
+
+        // Car position update
+        const speed = (SIM.leftSpeed + SIM.rightSpeed) / 2;
+        const turn = (SIM.rightSpeed - SIM.leftSpeed) / WHEEL_BASE;
+        SIM.carAngle += turn * 0.02;
+        SIM.carX += Math.cos(SIM.carAngle) * speed * 0.0003;
+        SIM.carY += Math.sin(SIM.carAngle) * speed * 0.0003;
+        SIM.carX = Math.max(0.05, Math.min(0.95, SIM.carX));
+        SIM.carY = Math.max(0.05, Math.min(0.95, SIM.carY));
+
+        // History
+        SIM.speedHistory.push({ l: SIM.leftSpeed, r: SIM.rightSpeed, t: Date.now() });
+        if (SIM.speedHistory.length > 200) SIM.speedHistory.shift();
+    }
+
+    // ==================== Telemetry Update ====================
+    function updateTelemetry() {
+        document.getElementById('valLeftSpeed').textContent = SIM.leftSpeed.toFixed(1);
+        document.getElementById('valRightSpeed').textContent = SIM.rightSpeed.toFixed(1);
+        document.getElementById('valLinear').textContent = SIM.linear.toFixed(1);
+        document.getElementById('valAngular').textContent = SIM.angular.toFixed(2);
+        document.getElementById('valPidL').textContent = SIM.pidL.toFixed(1);
+        document.getElementById('valPidR').textContent = SIM.pidR.toFixed(1);
+        document.getElementById('valEncL').textContent = Math.round(SIM.encL);
+        document.getElementById('valEncR').textContent = Math.round(SIM.encR);
+        document.getElementById('valUptime').textContent = Math.round((Date.now() - SIM.startTime) / 1000);
+
+        // Bars
+        const maxSpd = 50;
+        const lPct = Math.min(100, Math.abs(SIM.leftSpeed) / maxSpd * 100);
+        const rPct = Math.min(100, Math.abs(SIM.rightSpeed) / maxSpd * 100);
+        document.getElementById('barLeft').style.width = lPct + '%';
+        document.getElementById('barLeft').style.background = lPct > 80 ? 'var(--red)' : lPct > 50 ? 'var(--yellow)' : 'var(--green)';
+        document.getElementById('barRight').style.width = rPct + '%';
+        document.getElementById('barRight').style.background = rPct > 80 ? 'var(--red)' : rPct > 50 ? 'var(--yellow)' : 'var(--green)';
+
+        // Overlays
+        document.getElementById('overlayState').textContent = 'Mode: ' + SIM.mode;
+        document.getElementById('overlayCmd').textContent = 'Last: ' + SIM.lastCmd;
+    }
+
+    // ==================== Canvas: Car Visualization ====================
+    const carCanvas = document.getElementById('carCanvas');
+    const carCtx = carCanvas.getContext('2d');
+
+    function drawCar() {
+        const W = carCanvas.width = carCanvas.clientWidth * window.devicePixelRatio;
+        const H = carCanvas.height = carCanvas.clientHeight * window.devicePixelRatio;
+        const ctx = carCtx;
+        const dpr = window.devicePixelRatio;
+        ctx.clearRect(0, 0, W, H);
+
+        // Grid
+        ctx.strokeStyle = 'rgba(100, 116, 139, 0.1)';
+        ctx.lineWidth = 1;
+        const gridSize = 40 * dpr;
+        for (let x = 0; x < W; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = 0; y < H; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+        // Track (oval)
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+        ctx.lineWidth = 30 * dpr;
+        ctx.beginPath();
+        ctx.ellipse(W / 2, H / 2, W * 0.35, H * 0.35, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Center line
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
+        ctx.lineWidth = 2 * dpr;
+        ctx.setLineDash([10 * dpr, 10 * dpr]);
+        ctx.beginPath();
+        ctx.ellipse(W / 2, H / 2, W * 0.35, H * 0.35, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Car body
+        const cx = SIM.carX * W;
+        const cy = SIM.carY * H;
+        const angle = SIM.carAngle;
+        const carLen = 40 * dpr;
+        const carWid = 24 * dpr;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+
+        // Shadow
+        ctx.shadowColor = 'rgba(6, 182, 212, 0.4)';
+        ctx.shadowBlur = 20 * dpr;
+
+        // Body
+        ctx.fillStyle = '#06b6d4';
+        ctx.beginPath();
+        ctx.roundRect(-carLen / 2, -carWid / 2, carLen, carWid, 6 * dpr);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Direction arrow
+        ctx.fillStyle = '#0a0e17';
+        ctx.beginPath();
+        ctx.moveTo(carLen / 2 - 4 * dpr, 0);
+        ctx.lineTo(carLen / 2 - 14 * dpr, -6 * dpr);
+        ctx.lineTo(carLen / 2 - 14 * dpr, 6 * dpr);
+        ctx.closePath();
+        ctx.fill();
+
+        // Wheels
+        ctx.fillStyle = '#374151';
+        const wheelW = 8 * dpr, wheelH = 14 * dpr;
+        ctx.fillRect(-carLen / 2 + 4 * dpr, -carWid / 2 - 4 * dpr, wheelW, wheelH); // FL
+        ctx.fillRect(-carLen / 2 + 4 * dpr, carWid / 2 - 10 * dpr, wheelW, wheelH);  // RL
+        ctx.fillRect(carLen / 2 - 12 * dpr, -carWid / 2 - 4 * dpr, wheelW, wheelH);  // FR
+        ctx.fillRect(carLen / 2 - 12 * dpr, carWid / 2 - 10 * dpr, wheelW, wheelH);  // RR
+
+        // LED indicators
+        const ledR = 4 * dpr;
+        ctx.fillStyle = SIM.linear !== 0 ? '#22c55e' : '#64748b';
+        ctx.beginPath(); ctx.arc(carLen / 2, -carWid / 2 + 4 * dpr, ledR, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = SIM.linear !== 0 ? '#22c55e' : '#64748b';
+        ctx.beginPath(); ctx.arc(carLen / 2, carWid / 2 - 4 * dpr, ledR, 0, Math.PI * 2); ctx.fill();
+
+        // Rear LEDs
+        ctx.fillStyle = SIM.linear < 0 ? '#ef4444' : '#64748b';
+        ctx.beginPath(); ctx.arc(-carLen / 2, -carWid / 2 + 4 * dpr, ledR, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-carLen / 2, carWid / 2 - 4 * dpr, ledR, 0, Math.PI * 2); ctx.fill();
+
+        ctx.restore();
+
+        // Speed vectors
+        if (Math.abs(SIM.linear) > 1) {
+            ctx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+            ctx.lineWidth = 2 * dpr;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            const vecLen = SIM.linear * 2 * dpr;
+            ctx.lineTo(cx + Math.cos(angle) * vecLen, cy + Math.sin(angle) * vecLen);
+            ctx.stroke();
         }
     }
 
-    async function connect() {
-        try {
-            log('正在搜索蓝牙设备...');
-            
-            // 请求蓝牙设备
-            // 注意: 这里 acceptAllDevices: true 用于测试，实际生产建议使用 filters: [{ services: [CONFIG.SERVICE_UUID] }]
-            bluetoothDevice = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
-                optionalServices: [CONFIG.SERVICE_UUID]
+    // ==================== Canvas: Speed Chart ====================
+    const speedCanvas = document.getElementById('speedChart');
+    const speedCtx = speedCanvas.getContext('2d');
+
+    function drawChart() {
+        const W = speedCanvas.width = speedCanvas.clientWidth * window.devicePixelRatio;
+        const H = speedCanvas.height = speedCanvas.clientHeight * window.devicePixelRatio;
+        const ctx = speedCtx;
+        const dpr = window.devicePixelRatio;
+        ctx.clearRect(0, 0, W, H);
+
+        const data = SIM.speedHistory;
+        if (data.length < 2) return;
+
+        const pad = { top: 20 * dpr, bottom: 20 * dpr, left: 40 * dpr, right: 10 * dpr };
+        const plotW = W - pad.left - pad.right;
+        const plotH = H - pad.top - pad.bottom;
+
+        // Axes
+        ctx.strokeStyle = 'rgba(100, 116, 139, 0.2)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+            const y = pad.top + (plotH / 4) * i;
+            ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        }
+
+        // Labels
+        ctx.fillStyle = '#64748b';
+        ctx.font = `${10 * dpr}px monospace`;
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 4; i++) {
+            const val = 50 - i * 25;
+            const y = pad.top + (plotH / 4) * i;
+            ctx.fillText(val.toString(), pad.left - 6 * dpr, y + 4 * dpr);
+        }
+
+        // Draw lines
+        const maxVal = 50;
+        function drawLine(key, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2 * dpr;
+            ctx.beginPath();
+            data.forEach((d, i) => {
+                const x = pad.left + (i / (data.length - 1)) * plotW;
+                const y = pad.top + plotH / 2 - (d[key] / maxVal) * (plotH / 2);
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             });
-
-            bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
-
-            log('连接到 GATT 服务器...');
-            const server = await bluetoothDevice.gatt.connect();
-
-            log('获取服务...');
-            const service = await server.getPrimaryService(CONFIG.SERVICE_UUID);
-
-            log('获取特征值...');
-            bluetoothCharacteristic = await service.getCharacteristic(CONFIG.CHARACTERISTIC_UUID);
-
-            // 启用通知（如果支持）以接收小车状态
-            try {
-                await bluetoothCharacteristic.startNotifications();
-                bluetoothCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
-                log('已启用状态监听');
-            } catch (e) {
-                log('警告: 无法启用通知 (可能不支持)');
-            }
-
-            isConnected = true;
-            updateConnectionUI(true);
-            log('已连接到 ' + bluetoothDevice.name);
-
-        } catch (error) {
-            log('连接失败: ' + error);
-            console.error(error);
-        }
-    }
-
-    function disconnect() {
-        if (bluetoothDevice && bluetoothDevice.gatt.connected) {
-            bluetoothDevice.gatt.disconnect();
-        }
-    }
-
-    function onDisconnected() {
-        isConnected = false;
-        updateConnectionUI(false);
-        log('蓝牙已断开');
-    }
-
-    function updateConnectionUI(connected) {
-        if (connected) {
-            statusText.textContent = '已连接';
-            statusIndicator.classList.add('connected');
-            connectBtn.textContent = '断开连接';
-            connectBtn.style.backgroundColor = '#d63031';
-        } else {
-            statusText.textContent = '未连接';
-            statusIndicator.classList.remove('connected');
-            connectBtn.textContent = '连接蓝牙小车';
-            connectBtn.style.backgroundColor = ''; // 恢复默认
-            // 重置状态显示
-            batteryValue.textContent = '-- %';
-            speedValue.textContent = '-- cm/s';
-        }
-    }
-
-    // 2. 指令发送逻辑
-    async function sendCommand(action) {
-        if (!isConnected || !bluetoothCharacteristic) {
-            log('未连接设备，无法发送: ' + action);
-            return;
+            ctx.stroke();
         }
 
-        const data = CONFIG.COMMANDS[action];
-        if (data) {
-            try {
-                await bluetoothCharacteristic.writeValue(data);
-                // log('发送指令: ' + action); // 可选：避免日志刷屏
-            } catch (error) {
-                log('发送失败: ' + error);
-            }
-        }
+        drawLine('l', '#06b6d4');
+        drawLine('r', '#f59e0b');
+
+        // Legend
+        ctx.font = `${11 * dpr}px monospace`;
+        ctx.fillStyle = '#06b6d4';
+        ctx.textAlign = 'left';
+        ctx.fillText('Left Wheel', pad.left + 10 * dpr, pad.top + 14 * dpr);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('Right Wheel', pad.left + 120 * dpr, pad.top + 14 * dpr);
+
+        // Zero line
+        ctx.strokeStyle = 'rgba(100, 116, 139, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4 * dpr, 4 * dpr]);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top + plotH / 2);
+        ctx.lineTo(W - pad.right, pad.top + plotH / 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Title
+        ctx.fillStyle = '#64748b';
+        ctx.font = `${10 * dpr}px monospace`;
+        ctx.textAlign = 'right';
+        ctx.fillText('cm/s', W - pad.right, pad.top - 6 * dpr);
     }
 
-    // 3. 状态接收逻辑 (通知处理)
-    function handleNotifications(event) {
-        const value = event.target.value;
-        // 假设数据格式: [标识符, 值] 
-        // 实际需根据协议解析。此处为模拟解析示例：
-        // 假设 0x01 开头是电量，0x02 开头是速度
-        
-        // 简单示例：直接显示接收到的原始数据长度
-        // log('收到数据: ' + value.byteLength + ' 字节');
-
-        // TODO: 请在此处实现具体的数据解析逻辑
-        /*
-        const dataView = new DataView(value.buffer);
-        const type = dataView.getUint8(0);
-        const val = dataView.getUint8(1);
-        
-        if (type === 0x01) {
-            batteryValue.textContent = val + ' %';
-        } else if (type === 0x02) {
-            speedValue.textContent = val + ' cm/s';
-        }
-        */
-       
-       // 模拟数据更新 (演示用)
-       // 实际开发中请删除这部分，使用上面的解析逻辑
-       if (Math.random() > 0.5) {
-           batteryValue.textContent = Math.floor(Math.random() * 20 + 80) + ' %';
-       } else {
-           speedValue.textContent = Math.floor(Math.random() * 50) + ' cm/s';
-       }
+    // ==================== Command Log ====================
+    function addLog(cmd) {
+        const wrap = document.getElementById('logWrap');
+        const now = new Date();
+        const ts = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-time">${ts}</span><span class="log-cmd">@${cmd}</span>`;
+        wrap.insertBefore(entry, wrap.firstChild);
+        if (wrap.children.length > 50) wrap.removeChild(wrap.lastChild);
     }
 
-    // 4. 摄像头逻辑
-    function updateCamera() {
-        const url = document.getElementById('stream-url-input').value;
-        const img = document.getElementById('camera-stream');
-        const placeholder = document.getElementById('camera-placeholder');
-
-        if (url) {
-            img.src = url;
-            img.style.display = 'block';
-            placeholder.style.display = 'none';
-        }
-    }
-    
-    // 5. 主题切换逻辑
-    const themeSelector = document.getElementById('theme-selector');
-    
-    // 初始化主题
-    const savedTheme = localStorage.getItem('app-theme') || 'light';
-    setTheme(savedTheme);
-    themeSelector.value = savedTheme;
-
-    themeSelector.addEventListener('change', (e) => {
-        setTheme(e.target.value);
-    });
-
-    function setTheme(themeName) {
-        if (themeName === 'light') {
-            document.documentElement.removeAttribute('data-theme');
-        } else {
-            document.documentElement.setAttribute('data-theme', themeName);
-        }
-        localStorage.setItem('app-theme', themeName); // 保存用户选择
-        
-        // 更新图表颜色等动态内容（如果有）
-        updateButtonStyles();
-    }
-
-    function updateButtonStyles() {
-        // 重新计算按钮阴影颜色，确保在深色模式下可见
-        // CSS 变量已自动处理，此处为预留钩子
-    }
-
-    // 键盘控制支持 (WASD 或 方向键)
+    // ==================== Keyboard Controls ====================
     document.addEventListener('keydown', (e) => {
-        if (e.repeat) return; // 防止长按重复触发
-        switch(e.key) {
-            case 'ArrowUp':
-            case 'w':
-            case 'W':
-                sendCommand('FORWARD');
-                highlightButton('.btn-up', true);
-                break;
-            case 'ArrowDown':
-            case 's':
-            case 'S':
-                sendCommand('BACKWARD');
-                highlightButton('.btn-down', true);
-                break;
-            case 'ArrowLeft':
-            case 'a':
-            case 'A':
-                sendCommand('LEFT');
-                highlightButton('.btn-left', true);
-                break;
-            case 'ArrowRight':
-            case 'd':
-            case 'D':
-                sendCommand('RIGHT');
-                highlightButton('.btn-right', true);
-                break;
-        }
+        const keyMap = {
+            'ArrowUp': 'FORWARD', 'ArrowDown': 'BACK',
+            'ArrowLeft': 'LEFT', 'ArrowRight': 'RIGHT',
+            'w': 'FORWARD', 's': 'BACK', 'a': 'LEFT', 'd': 'RIGHT',
+            'q': 'LITTLELEFT', 'e': 'LITTLERIGHT',
+            ' ': 'STOP',
+        };
+        const cmd = keyMap[e.key];
+        if (cmd) { e.preventDefault(); sendCmd(cmd); }
     });
 
-    document.addEventListener('keyup', (e) => {
-        switch(e.key) {
-            case 'ArrowUp': case 'w': case 'W':
-            case 'ArrowDown': case 's': case 'S':
-            case 'ArrowLeft': case 'a': case 'A':
-            case 'ArrowRight': case 'd': case 'D':
-                sendCommand('STOP');
-                highlightButtonAllOff();
-                break;
-        }
-    });
+    // ==================== Main Loop ====================
+    let frameCount = 0;
+    let lastFpsTime = Date.now();
+    let fps = 0;
 
-    function highlightButton(selector, active) {
-        const btn = document.querySelector(selector);
-        if (btn) {
-            if (active) {
-                btn.style.backgroundColor = '#e0e0e0';
-                btn.style.transform = 'scale(0.95)';
-            } else {
-                btn.style.backgroundColor = '';
-                btn.style.transform = '';
-            }
+    function loop() {
+        simTick();
+        drawCar();
+        drawChart();
+        updateTelemetry();
+
+        frameCount++;
+        const now = Date.now();
+        if (now - lastFpsTime >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastFpsTime = now;
+            document.getElementById('overlayFps').textContent = 'FPS: ' + fps;
         }
+
+        requestAnimationFrame(loop);
     }
 
-    function highlightButtonAllOff() {
-        document.querySelectorAll('.btn-control').forEach(btn => {
-            btn.style.backgroundColor = '';
-            btn.style.transform = '';
-        });
-    }
+    // Auto demo
+    const demoSeq = ['FORWARD', 'LITTLERIGHT', 'FORWARD', 'LITTLELEFT', 'RIGHT', 'FORWARD', 'STOP'];
+    let demoIdx = 0;
+    setInterval(() => {
+        if (SIM.mode === 'AUTO') {
+            sendCmd(demoSeq[demoIdx % demoSeq.length]);
+            demoIdx++;
+        }
+    }, 3000);
 
-</script>
+    addLog('System initialized');
+    addLog('Mode: MANUAL');
+    addLog('Use arrow keys or D-Pad');
+    loop();
+    </script>
 </body>
 </html>
