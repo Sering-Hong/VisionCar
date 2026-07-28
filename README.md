@@ -1,6 +1,6 @@
-# RC-Car
+﻿# VisionCar
 
-> **STM32F103 + FreeRTOS + RDK X5 视觉智能小车**
+> **STM32F103 + FreeRTOS + RDK X5 视觉导航智能小车**
 >
 > 双轮差速驱动 | 编码器闭环 PID | OpenCV 巡线/避障/抓取 | 状态机架构
 
@@ -204,7 +204,7 @@ flowchart TD
 ## 目录结构
 
 ```
-RC-Car/
+VisionCar/
 ├── firmware/                       # STM32 固件（Keil MDK-ARM）
 │   ├── App/                        # 应用层模块
 │   │   ├── pid.c/h                 # PID 控制器（位置式 + 增量式）
